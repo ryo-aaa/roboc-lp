@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ROBOC. MINI Showcase</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        height: 100%;
+        background: #000;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+          sans-serif;
+        min-height: 100%;
+        margin: 0;
+        color: #fafafa;
+        background: transparent;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      #background-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -2;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+      }
+
+      #image-background,
+      #second-image-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+      }
+
+      #image-background {
+        background-image: url("./画像1.png");
+      }
+
+      #second-image-background {
+        background-image: url("./画像2.png");
+      }
+
+      #image-background.visible,
+      #second-image-background.visible {
+        opacity: 1;
+      }
+
+      main {
+        min-height: 360vh;
+        background: transparent;
+      }
+
+      .scroll-spacer {
+        height: 120vh;
+      }
+
+      #logo-trigger {
+        height: 60vh;
+      }
+
+      #logo-display {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(40vw, 320px);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        z-index: 1;
+      }
+
+      #logo-display.visible {
+        opacity: 1;
+      }
+
+      #logo-display img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      #menu-toggle {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        width: 48px;
+        height: 48px;
+        border: none;
+        background: rgba(0, 0, 0, 0.55);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 3;
+        transition: background 0.3s ease;
+      }
+
+      #menu-toggle:focus-visible {
+        outline: 2px solid rgba(255, 255, 255, 0.7);
+        outline-offset: 3px;
+      }
+
+      #menu-toggle:hover {
+        background: rgba(0, 0, 0, 0.75);
+      }
+
+      #menu-toggle span {
+        height: 2px;
+        width: 22px;
+        background: #fff;
+        position: relative;
+        display: block;
+        transition: transform 0.3s ease, background 0.3s ease;
+      }
+
+      #menu-toggle span::before,
+      #menu-toggle span::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 22px;
+        height: 2px;
+        background: currentColor;
+        transition: transform 0.3s ease;
+      }
+
+      #menu-toggle span::before {
+        top: -7px;
+      }
+
+      #menu-toggle span::after {
+        top: 7px;
+      }
+
+      #menu-toggle[aria-expanded="true"] span {
+        background: transparent;
+      }
+
+      #menu-toggle[aria-expanded="true"] span::before {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      #menu-toggle[aria-expanded="true"] span::after {
+        transform: translateY(-7px) rotate(-45deg);
+      }
+
+      #menu-panel {
+        position: fixed;
+        top: 72px;
+        right: 24px;
+        width: 220px;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
+        color: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        transform: translateY(-12px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 3;
+      }
+
+      #menu-panel.open {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      #menu-panel ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      #menu-panel a {
+        color: inherit;
+        text-decoration: none;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        transition: color 0.2s ease;
+      }
+
+      #menu-panel a:hover,
+      #menu-panel a:focus-visible {
+        color: #d0d0ff;
+      }
+
+      .gallery-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        background: #000;
+        position: relative;
+        z-index: 0;
+      }
+
+      .gallery-item {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: translateY(80px);
+        transition: opacity 0.9s ease, transform 0.9s ease;
+        padding: 40px 24px;
+      }
+
+      .gallery-item.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .gallery-item img {
+        display: block;
+        width: min(80vw, 640px);
+        height: auto;
+      }
+
+      .media-section {
+        background: #050505;
+        color: #f2f2f2;
+        padding: 120px 24px 140px;
+      }
+
+      .media-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        align-items: center;
+      }
+
+      .media-display {
+        width: 100%;
+        display: grid;
+        gap: 28px;
+      }
+
+      .media-display img,
+      .media-video {
+        width: 100%;
+        border-radius: 24px;
+        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.45);
+      }
+
+      .media-video {
+        position: relative;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .media-video video {
+        width: 100%;
+        height: auto;
+        display: block;
+        pointer-events: none;
+      }
+
+      .media-display img {
+        object-fit: cover;
+      }
+
+      .lp-section {
+        background: #050505;
+        color: #f5f5f5;
+        padding: 120px 24px 160px;
+      }
+
+      .lp-inner {
+        max-width: 1080px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+        align-items: center;
+        text-align: center;
+      }
+
+      .lp-text {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 520px;
+      }
+
+      .lp-text h2 {
+        font-size: clamp(2rem, 3vw + 1rem, 3.4rem);
+        letter-spacing: 0.08em;
+      }
+
+      .lp-text p {
+        line-height: 1.7;
+        font-size: 1rem;
+        color: #d6d6d6;
+      }
+
+      .lp-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 32px;
+        border-radius: 999px;
+        background: linear-gradient(120deg, #8a6bff, #5eecff);
+        color: #050505;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-decoration: none;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        align-self: center;
+      }
+
+      .lp-cta:hover,
+      .lp-cta:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(142, 107, 255, 0.35);
+      }
+
+      .lp-price {
+        font-size: clamp(1.8rem, 2.6vw + 1rem, 3rem);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        color: #fefefe;
+        text-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+      }
+
+      .lp-price small {
+        display: block;
+        font-size: 0.5em;
+        letter-spacing: 0.24em;
+        color: #a8a8a8;
+        margin-top: 12px;
+      }
+
+      .lp-image {
+        width: min(520px, 80vw);
+      }
+
+      .lp-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 18px;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+      }
+
+      .lp-showcase {
+        margin-top: 80px;
+        display: grid;
+        gap: 36px;
+      }
+
+      .lp-case {
+        background: radial-gradient(circle at top, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.4));
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        padding: 36px 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        text-align: center;
+        transition: transform 0.25s ease, border-color 0.25s ease;
+      }
+
+      .lp-case:hover,
+      .lp-case:focus-within {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+
+      .lp-case figure {
+        width: min(260px, 70vw);
+        margin: 0;
+        border-radius: 18px;
+        overflow: hidden;
+        height: 220px;
+      }
+
+      .lp-case img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      }
+
+      .lp-case[data-variant="1"] img {
+        height: auto;
+        width: 70%;
+        object-fit: contain;
+        box-shadow: none;
+      }
+
+      .lp-case[data-variant="1"] figure {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.8));
+      }
+
+      .lp-case h3 {
+        font-size: 1.25rem;
+        letter-spacing: 0.06em;
+      }
+
+      .lp-case p {
+        color: #c8c8c8;
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .use-cases {
+        background: #060606;
+        color: #f5f5f5;
+        padding: 140px 24px 180px;
+      }
+
+      .use-cases__inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+      }
+
+      .use-cases__intro h2 {
+        font-size: clamp(2rem, 3.2vw + 1rem, 3.2rem);
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+
+      .use-cases__intro p {
+        text-align: center;
+        color: #d4d4d4;
+        line-height: 1.7;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      .use-case-grid {
+        display: grid;
+        gap: 32px;
+      }
+
+      .use-case-card {
+        background: rgba(12, 12, 12, 0.9);
+        border-radius: 28px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: grid;
+        grid-template-columns: 1fr;
+        transition: transform 0.3s ease, border-color 0.3s ease;
+      }
+
+      .use-case-card:hover,
+      .use-case-card:focus-within {
+        transform: translateY(-6px);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+
+      .use-case-card figure,
+      .use-case-card img {
+        width: 100%;
+        height: 100%;
+      }
+
+      .use-case-card img {
+        display: block;
+        object-fit: cover;
+      }
+
+      .use-case-card__body {
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .use-case-card__body h3 {
+        font-size: 1.4rem;
+        letter-spacing: 0.05em;
+      }
+
+      .use-case-card__body p {
+        color: #c9c9c9;
+        line-height: 1.6;
+        font-size: 0.98rem;
+      }
+
+      .use-case-card__body ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        color: #9adfff;
+        font-size: 0.9rem;
+        letter-spacing: 0.03em;
+      }
+
+      .use-case-card__body ul li::before {
+        content: "◆ ";
+        color: #5eecff;
+      }
+
+      .spec-section {
+        background: #040404;
+        color: #f8f8f8;
+        padding: 140px 24px 160px;
+      }
+
+      .spec-inner {
+        max-width: 1080px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+      }
+
+      .spec-header {
+        text-align: center;
+      }
+
+      .spec-header h2 {
+        font-size: clamp(2rem, 3vw + 1rem, 3.2rem);
+        letter-spacing: 0.08em;
+      }
+
+      .spec-header p {
+        color: #cfcfcf;
+        margin-top: 16px;
+        line-height: 1.7;
+      }
+
+      .spec-grid {
+        display: grid;
+        gap: 24px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 28px;
+        padding: 36px 28px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .spec-row {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(0, 1fr);
+        padding: 24px 18px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      .spec-row strong {
+        font-size: 1.1rem;
+        letter-spacing: 0.06em;
+      }
+
+      .spec-row span {
+        color: #b8b8b8;
+        line-length: 1.6;
+        line-height: 1.6;
+      }
+
+      .spec-row ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        color: #8ad8ff;
+        font-size: 0.92rem;
+        letter-spacing: 0.04em;
+      }
+
+      .spec-row ul li::before {
+        content: "・";
+        margin-right: 4px;
+        color: #5eecff;
+      }
+
+      .floating-cta {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        background: linear-gradient(145deg, #8a6bff, #5eecff);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        z-index: 4;
+        box-shadow: 0 20px 40px rgba(94, 236, 255, 0.35);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      .floating-cta:hover,
+      .floating-cta:focus-visible {
+        transform: translateY(-4px);
+        box-shadow: 0 26px 52px rgba(138, 107, 255, 0.45);
+      }
+
+      @media (min-width: 680px) {
+        .lp-showcase {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .use-case-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .use-case-card {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (min-width: 960px) {
+        .media-inner {
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .media-display {
+          max-width: 960px;
+        }
+
+        .lp-inner {
+          flex-direction: row;
+          align-items: center;
+          text-align: left;
+        }
+
+        .lp-text {
+          flex: 1;
+          text-align: left;
+          align-items: flex-start;
+        }
+
+        .lp-image {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+        }
+
+        .lp-cta {
+          align-self: flex-start;
+        }
+
+        .lp-showcase {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .use-case-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .use-case-card {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+        }
+
+        .use-cases__intro {
+          text-align: left;
+          max-width: 720px;
+          margin: 0;
+        }
+
+        .use-cases__intro h2,
+        .use-cases__intro p {
+          text-align: left;
+        }
+
+        .spec-header {
+          text-align: left;
+          max-width: 720px;
+          margin: 0;
+        }
+
+        .spec-header p {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body id="top">
+    <video
+      id="background-video"
+      src="./1021.mp4"
+      preload="auto"
+      playsinline
+      muted
+    ></video>
+    <button id="menu-toggle" type="button" aria-haspopup="true" aria-expanded="false">
+      <span></span>
+    </button>
+    <nav id="menu-panel" aria-hidden="true">
+      <ul>
+        <li><a href="#top">Top</a></li>
+        <li><a href="#logo-trigger">Logo Reveal</a></li>
+        <li><a href="#image2-trigger">Final Still</a></li>
+        <li>
+          <a href="https://www.instagram.com/roboc_365/" target="_blank" rel="noopener">Instagram</a>
+        </li>
+        <li>
+          <a href="https://jp.pinterest.com/ec2021felice/" target="_blank" rel="noopener">Pinterest</a>
+        </li>
+      </ul>
+    </nav>
+    <div id="logo-display" aria-hidden="true">
+      <img src="./LOGO.png" alt="ROBOC.ロゴ" />
+    </div>
+    <div id="image-background" aria-hidden="true"></div>
+    <div id="second-image-background" aria-hidden="true"></div>
+    <main>
+      <div class="scroll-spacer" aria-hidden="true"></div>
+      <div id="logo-trigger" aria-hidden="true"></div>
+      <div class="scroll-spacer" aria-hidden="true"></div>
+      <div id="bottom-trigger" aria-hidden="true" style="height: 80vh"></div>
+      <div class="scroll-spacer" aria-hidden="true"></div>
+      <div id="image2-trigger" aria-hidden="true" style="height: 80vh"></div>
+      <section class="gallery-section" aria-label="Gallery">
+        <div class="gallery-item">
+          <img src="./画像3.png" alt="ROBOC. MINI ビジュアル 1" />
+        </div>
+        <div class="gallery-item">
+          <img src="./画像4.png" alt="ROBOC. MINI ビジュアル 2" />
+        </div>
+        <div class="gallery-item">
+          <img src="./画像11.png" alt="ROBOC. MINI ビジュアル 3" />
+        </div>
+      </section>
+      <section class="media-section" aria-label="ROBOC. MINI メディアギャラリー">
+        <div class="media-inner">
+          <div class="media-display">
+            <div class="media-video" aria-label="ROBOC. MINI プロトタイプムービー">
+              <video
+                src="./0001-0030.mp4"
+                preload="metadata"
+                playsinline
+                muted
+                loop
+                autoplay
+              ></video>
+            </div>
+            <img src="./画像5.png" alt="ROBOC. MINI 最新モジュール装着イメージ" />
+          </div>
+        </div>
+      </section>
+      <section class="lp-section" aria-labelledby="lp-heading">
+        <div class="lp-inner">
+          <div class="lp-text">
+            <h2 id="lp-heading">ROBOC. MINI<br />暮らしをもっとフレンドリーに。</h2>
+            <p>
+              手のひらサイズのパーソナルロボット「ROBOC. MINI」は、音声で予定確認や家電操作をスッとこなす日常アシスタントです。
+            </p>
+            <p class="lp-price">
+              198,00円
+              <small>税込・数量限定先行販売</small>
+            </p>
+            <a class="lp-cta" href="mailto:info@roboc.jp">ラインナップと価格を見る</a>
+          </div>
+          <div class="lp-image" aria-hidden="true">
+            <img src="./画像2.png" alt="ROBOC. MINI 製品画像" />
+          </div>
+        </div>
+        <div class="lp-showcase" aria-label="製品の特長">
+          <article class="lp-case" data-variant="2">
+            <figure>
+              <img src="./画像1.png" alt="ハンズフリーAIアシスタント" />
+            </figure>
+            <h3>ハンズフリーAIアシスタント</h3>
+            <p>
+              「ねえロボック」と呼びかけるだけで、天気・ニュース・メモ・翻訳をその場で読み上げ。ビデオ通話や音楽再生もワンタップで切り替えできます。
+            </p>
+          </article>
+          <article class="lp-case" data-variant="3">
+            <figure>
+              <img src="./画像2.png" alt="モジュールアクセサリー" />
+            </figure>
+            <h3>モジュールアクセサリー</h3>
+            <p>
+              マグネット式アームを付け替えるだけで、セキュリティカメラやデスクライト、空気質センサーに早変わり。必要な機能だけを選べます。
+            </p>
+          </article>
+          <article class="lp-case" data-variant="4">
+            <figure>
+              <img src="./画像3.png" alt="スマートホーム連携" />
+            </figure>
+            <h3>スマートホーム連携</h3>
+            <p>
+              Wi-Fi／Matter対応で主要スマートホーム機器と連携。シーンごとの自動制御で、照明やエアコンを先回りして管理します。
+            </p>
+          </article>
+          <article class="lp-case" data-variant="5">
+            <figure>
+              <img src="./画像4.png" alt="ARリモートビュー" />
+            </figure>
+            <h3>ARリモートビュー</h3>
+            <p>
+              専用アプリを起動すれば、内蔵カメラの映像をARオーバーレイでチェック。手元のスマホを動かすだけで死角を確認できます。
+            </p>
+          </article>
+          <article class="lp-case" data-variant="6">
+            <figure>
+              <img src="./画像3.png" alt="長時間バッテリー" />
+            </figure>
+            <h3>長時間バッテリー</h3>
+            <p>
+              フル充電で最大18時間稼働のロングバッテリー。スタンバイ時は超低消費電力モードに自動切り替え、夜間も安心です。
+            </p>
+          </article>
+          <article class="lp-case" data-variant="1">
+            <figure>
+              <img src="./LOGO.png" alt="専用アプリ" />
+            </figure>
+            <h3>専用アプリ</h3>
+            <p>
+              iOS／Android対応アプリでスキル追加や動作ログ確認、複数台の一括管理が可能。クラウドアップデートで常に新機能を入手できます。
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="use-cases" aria-labelledby="use-cases-heading">
+        <div class="use-cases__inner">
+          <div class="use-cases__intro">
+            <h2 id="use-cases-heading">あなたの暮らしでのROBOC. MINI</h2>
+            <p>
+              コンパクトなボディに詰め込まれたAIとモジュールで、ROBOC. MINIはあらゆるシーンにフィットします。朝の支度からナイトタイムまで、そっと寄り添うパートナーとして活躍します。
+            </p>
+          </div>
+          <div class="use-case-grid">
+            <article class="use-case-card">
+              <figure>
+                <img src="./画像1.png" alt="ベッドサイドでのROBOC. MINI" />
+              </figure>
+              <div class="use-case-card__body">
+                <h3>モーニングサポート</h3>
+                <p>
+                  起床時間に合わせて柔らかな光を灯し、今日の予定や気温を読み上げ。コーヒーメーカーと連携して、香りとともに一日がスタートします。
+                </p>
+                <ul>
+                  <li>音声でのアラーム停止</li>
+                  <li>天気・渋滞情報の自動読み上げ</li>
+                </ul>
+              </div>
+            </article>
+            <article class="use-case-card">
+              <figure>
+                <img src="./画像2.png" alt="デスクで作業を支援するROBOC. MINI" />
+              </figure>
+              <div class="use-case-card__body">
+                <h3>ワークスペースアシスト</h3>
+                <p>
+                  室温と照度を自動調整しながら会議前にリマインド通知。ビデオ会議中はサブカメラとして活用し、メモ書きも音声で保存できます。
+                </p>
+                <ul>
+                  <li>デスクライトモジュールの自動調光</li>
+                  <li>ビデオ会議のサブカメラ化</li>
+                </ul>
+              </div>
+            </article>
+            <article class="use-case-card">
+              <figure>
+                <img src="./画像1.png" alt="アウトドアでポータブル利用するROBOC. MINI" />
+              </figure>
+              <div class="use-case-card__body">
+                <h3>アウトドアモード</h3>
+                <p>
+                  モバイルバッテリーを接続すれば外でも長時間稼働。Bluetoothスピーカーとして音楽を流しながら、モジュールを切り替えてポータブルセンサーに。
+                </p>
+                <ul>
+                  <li>GPSトラッキングで迷子防止</li>
+                  <li>気圧・温度のリアルタイム計測</li>
+                </ul>
+              </div>
+            </article>
+            <article class="use-case-card">
+              <figure>
+                <img src="./画像2.png" alt="アプリで操作するROBOC. MINI" />
+              </figure>
+              <div class="use-case-card__body">
+                <h3>アプリでいつでもコントロール</h3>
+                <p>
+                  専用アプリからシーンをプリセットしておけば、いつでもワンタップで切り替え。複数台のROBOC. MINIをまとめて制御できます。
+                </p>
+                <ul>
+                  <li>クラウド同期の自動バックアップ</li>
+                  <li>スケジュールごとのシーン設定</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="spec-section" aria-labelledby="specs-heading">
+        <div class="spec-inner">
+          <div class="spec-header">
+            <h2 id="specs-heading">ROBOC. MINI スペック</h2>
+            <p>
+              どこへでも連れていけるコンパクトサイズながら、AIアシスタントとして必要な機能を詰め込んだオールインワン仕様。API連携であなたのサービスにも簡単に組み込めます。
+            </p>
+          </div>
+          <div class="spec-grid">
+            <div class="spec-row">
+              <strong>サイズ / 重量</strong>
+              <span>高さ 128mm × 幅 82mm × 奥行き 78mm / 320g</span>
+            </div>
+            <div class="spec-row">
+              <strong>バッテリー</strong>
+              <span>リチウムイオン 5,000mAh（最大18時間稼働） / USB-C 急速充電 &amp; ドック式ワイヤレス給電</span>
+            </div>
+            <div class="spec-row">
+              <strong>AIエンジン</strong>
+              <span>ROBOC. AI Core + OpenAI API / Google PaLM API / Azure Cognitive Services 対応</span>
+              <ul>
+                <li>カスタムスキル開発用 REST / WebSocket API</li>
+                <li>アプリからのAIモデル切り替え（日本語・英語モード）</li>
+              </ul>
+            </div>
+            <div class="spec-row">
+              <strong>センサー / デバイス</strong>
+              <span>8K超広角カメラ / 赤外線センサー / ToFセンサー / 気圧・温湿度センサー / 3軸モーションセンサー</span>
+            </div>
+            <div class="spec-row">
+              <strong>接続性</strong>
+              <span>Wi-Fi 6E / Bluetooth 5.3 / Matter / Thread / NFC ペアリング</span>
+            </div>
+            <div class="spec-row">
+              <strong>スマートホーム連携</strong>
+              <span>HomeKit / Google Home / Alexa / IFTTT 対応プリセット、Zapier統合ワークフロー</span>
+            </div>
+            <div class="spec-row">
+              <strong>セキュリティ</strong>
+              <span>TPM 2.0 ハードウェア暗号化 / エンドツーエンド動画ストリーミング / 指紋 + 顔認証ロック</span>
+            </div>
+            <div class="spec-row">
+              <strong>同梱品</strong>
+              <span>ROBOC. MINI 本体 / ワイヤレスドッキングステーション / モジュールアーム（ライト / センサー） / USB-C ケーブル</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <a class="floating-cta" href="mailto:info@roboc.jp?subject=ROBOC%20MINI%E4%BA%88%E7%B4%84">予約購入</a>
+    <script>
+      const video = document.getElementById("background-video");
+      let pendingSync = false;
+      let ready = false;
+      const imageBackground = document.getElementById("image-background");
+      const secondImageBackground = document.getElementById("second-image-background");
+      const bottomTrigger = document.getElementById("bottom-trigger");
+      const secondTrigger = document.getElementById("image2-trigger");
+      const logo = document.getElementById("logo-display");
+      const logoTrigger = document.getElementById("logo-trigger");
+      const menuToggle = document.getElementById("menu-toggle");
+      const menuPanel = document.getElementById("menu-panel");
+      let firstStillActive = false;
+      let secondStillActive = false;
+      let autoplayRequested = false;
+      let autoplayActivated = false;
+      let primingVideo = false;
+      let scrollLocked = false;
+      let lockedScrollY = 0;
+
+      const applyBackgroundState = () => {
+        if (secondStillActive && secondImageBackground) {
+          secondImageBackground.classList.add("visible");
+          imageBackground?.classList.remove("visible");
+          video.style.opacity = 0;
+        } else if (firstStillActive && imageBackground) {
+          imageBackground.classList.add("visible");
+          secondImageBackground?.classList.remove("visible");
+          video.style.opacity = 0;
+        } else {
+          imageBackground?.classList.remove("visible");
+          secondImageBackground?.classList.remove("visible");
+          video.style.opacity = ready ? 1 : 0;
+        }
+      };
+
+      const updateBackgroundState = () => {
+        const threshold = window.innerHeight * 0.6;
+        let newSecondActive = false;
+        let newFirstActive = false;
+
+        if (secondTrigger) {
+          const secondRect = secondTrigger.getBoundingClientRect();
+          if (secondRect.top <= threshold) {
+            newSecondActive = true;
+          }
+        }
+
+        if (!newSecondActive && bottomTrigger) {
+          const firstRect = bottomTrigger.getBoundingClientRect();
+          if (firstRect.top <= threshold) {
+            newFirstActive = true;
+          }
+        }
+
+        firstStillActive = newFirstActive;
+        secondStillActive = newSecondActive;
+        applyBackgroundState();
+      };
+
+      const requestSync = () => {
+        if (pendingSync) {
+          return;
+        }
+        pendingSync = true;
+        window.requestAnimationFrame(() => {
+          updateBackgroundState();
+          pendingSync = false;
+        });
+      };
+
+      const attemptVideoPlayback = () => {
+        if (autoplayActivated || !ready) {
+          return;
+        }
+        video
+          .play()
+          .then(() => {
+            autoplayActivated = true;
+          })
+          .catch(() => {
+            /* Retry on next user interaction */
+          });
+      };
+
+      const primeVideo = () => {
+        primingVideo = true;
+        video
+          .play()
+          .then(() => {
+            video.pause();
+          })
+          .catch(() => {
+            /* Autoplay might be blocked */
+          })
+          .finally(() => {
+            ready = true;
+            updateBackgroundState();
+            if (autoplayRequested) {
+              attemptVideoPlayback();
+            }
+            primingVideo = false;
+          });
+      };
+
+      video.addEventListener("loadedmetadata", () => {
+        requestSync();
+      });
+
+      video.addEventListener("canplay", () => {
+        if (!ready) {
+          primeVideo();
+        }
+      });
+
+      const handleScroll = () => {
+        autoplayRequested = true;
+        attemptVideoPlayback();
+        requestSync();
+      };
+
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      window.addEventListener("resize", requestSync);
+
+      if (video.readyState >= 1) {
+        primeVideo();
+      } else {
+        video.load();
+      }
+
+      const lockScroll = () => {
+        if (scrollLocked) {
+          return;
+        }
+        lockedScrollY = window.scrollY;
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${lockedScrollY}px`;
+        document.body.style.width = "100%";
+        document.body.style.overflow = "hidden";
+        scrollLocked = true;
+      };
+
+      const unlockScroll = () => {
+        if (!scrollLocked) {
+          return;
+        }
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, lockedScrollY);
+        scrollLocked = false;
+      };
+
+      video.addEventListener("play", () => {
+        if (primingVideo) {
+          return;
+        }
+        lockScroll();
+      });
+
+      video.addEventListener("pause", () => {
+        if (primingVideo) {
+          return;
+        }
+        unlockScroll();
+      });
+
+      video.addEventListener("ended", () => {
+        unlockScroll();
+      });
+
+      if (logo && logoTrigger) {
+        const logoObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                logo.classList.add("visible");
+              } else {
+                logo.classList.remove("visible");
+              }
+            });
+          },
+          { threshold: 0.5 }
+        );
+        logoObserver.observe(logoTrigger);
+      }
+
+      const galleryItems = Array.from(document.querySelectorAll(".gallery-item"));
+      if (galleryItems.length) {
+        const galleryObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                galleryObserver.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.35 }
+        );
+        galleryItems.forEach((item) => galleryObserver.observe(item));
+      }
+
+      if (menuToggle && menuPanel) {
+        const toggleMenu = () => {
+          const expanded = menuToggle.getAttribute("aria-expanded") === "true";
+          menuToggle.setAttribute("aria-expanded", String(!expanded));
+          menuPanel.classList.toggle("open", !expanded);
+          menuPanel.setAttribute("aria-hidden", String(expanded));
+        };
+
+        menuToggle.addEventListener("click", toggleMenu);
+
+        document.addEventListener("click", (event) => {
+          if (
+            menuPanel.classList.contains("open") &&
+            !menuPanel.contains(event.target) &&
+            !menuToggle.contains(event.target)
+          ) {
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuPanel.classList.remove("open");
+            menuPanel.setAttribute("aria-hidden", "true");
+          }
+        });
+
+        menuPanel.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", () => {
+            menuToggle.setAttribute("aria-expanded", "false");
+            menuPanel.classList.remove("open");
+            menuPanel.setAttribute("aria-hidden", "true");
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
